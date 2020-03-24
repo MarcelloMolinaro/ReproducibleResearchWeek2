@@ -15,8 +15,6 @@ hist(stepsPerDay$stepsDay,
 #calculates and then prints the Mean and Median of steps per day over timeframe
 summarise(stepsPerDay, "Mean Steps per Day" = mean(stepsDay), 
                       "Median Steps per Day" = median(stepsDay))
-
-
    
 #Make a time series plot
 ##5-min interval (x-axis) vs avg # steps taken across all days (y-axis)
@@ -30,7 +28,7 @@ plot(data = stepsPerInterval,
 stepsPerInterval[stepsPerInterval$stepsInterval == max(stepsPerInterval$stepsInterval), ]
 
 
-#count NA's
+#count NA's------------------Post NA work------------------------------------------------
 nrow(rawdata[is.na(rawdata$steps) == TRUE, ]) / nrow(rawdata)
 
 imputedata <- rawdata
@@ -58,3 +56,22 @@ hist(stepsPerDay2$stepsDay,
 summarise(stepsPerDay2, "Mean Steps per Day" = mean(stepsDay), 
           "Median Steps per Day" = median(stepsDay))
 
+imputedata <- mutate(imputedata, "dayofweek" = ifelse(
+   weekdays(as.Date(date)) == "Saturday" | weekdays(as.Date(date)) == "Sunday",
+   "Weekend",
+   "Weekday"))
+
+imputedata$dayofweek <- as.factor(imputedata$dayofweek)
+
+stepsPerInterval2 <- group_by(imputedata, interval, dayofweek) %>% summarise("stepsInterval" = mean(steps))
+
+par(mfrow = c(2, 1))
+for (i in levels(stepsPerInterval2$dayofweek)){
+            plot(as.matrix(stepsPerInterval2[stepsPerInterval2$dayofweek == i, 3]) 
+                 ~ as.matrix(stepsPerInterval2[stepsPerInterval2$dayofweek == i, 1]),
+                 type = "l",
+                 main = i,
+                 xlab = "Interval",
+                 ylab = "Avg Steps",
+                 ylim = c(1,225))
+}
